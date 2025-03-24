@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { ArrowRight, ArrowLeft, Save } from "lucide-react";
+import { ArrowRight, ArrowLeft, Save, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -15,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { predictThyroidRisk } from "@/utils/thyroidModel";
 
 const formSchema = z.object({
   personalInfo: z.object({
@@ -55,6 +56,10 @@ type FormValues = z.infer<typeof formSchema>;
 const PatientForm = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("personalInfo");
+  const [labAnalysis, setLabAnalysis] = useState<{
+    abnormal: boolean;
+    details: string[];
+  } | null>(null);
   
   const defaultValues: FormValues = {
     personalInfo: {
@@ -91,34 +96,28 @@ const PatientForm = () => {
   });
   
   const onSubmit = (data: FormValues) => {
-    // Simulate API call to backend for prediction
-    console.log("Form data submitted:", data);
+    const prediction = predictThyroidRisk(data);
     
-    // In a real application, we would send this data to a backend
-    // and get a prediction result. For now, we'll simulate this.
-    
-    // Generate a fake patient ID
     const patientId = Math.floor(Math.random() * 10000);
     
-    // Show success toast
     toast.success("Patient data submitted successfully", {
       description: "Redirecting to results page...",
     });
     
-    // Store data in localStorage for demo purposes
     const patients = JSON.parse(localStorage.getItem("patients") || "[]");
     const newPatient = {
       id: patientId,
       ...data,
       timestamp: new Date().toISOString(),
-      predictionResult: Math.random() > 0.7 ? "high_risk" : "low_risk",
-      predictionScore: (Math.random() * 100).toFixed(2),
+      predictionResult: prediction.risk === "high" ? "high_risk" : prediction.risk === "moderate" ? "moderate_risk" : "low_risk",
+      predictionScore: prediction.score,
+      riskFactors: prediction.factors,
+      labAnalysis: prediction.labResultsAnalysis,
     };
     
     patients.push(newPatient);
     localStorage.setItem("patients", JSON.stringify(patients));
     
-    // Navigate to results page
     setTimeout(() => {
       navigate(`/results/${patientId}`);
     }, 1000);
@@ -136,6 +135,43 @@ const PatientForm = () => {
     else if (activeTab === "medicalHistory") setActiveTab("personalInfo");
   };
 
+  const analyzeLabResults = () => {
+    const labResults = form.getValues("labResults");
+    
+    const hasValues = Object.values(labResults).some(
+      value => value && value.trim() !== ""
+    );
+    
+    if (!hasValues) {
+      setLabAnalysis(null);
+      toast.info("No lab values entered to analyze");
+      return;
+    }
+    
+    const personalInfo = form.getValues("personalInfo");
+    const symptoms = form.getValues("symptoms");
+    const medicalHistory = form.getValues("medicalHistory");
+    
+    const prediction = predictThyroidRisk({
+      labResults,
+      personalInfo,
+      symptoms,
+      medicalHistory
+    });
+    
+    setLabAnalysis(prediction.labResultsAnalysis);
+    
+    if (prediction.labResultsAnalysis.abnormal) {
+      toast.warning("Abnormal lab results detected", {
+        description: "See the analysis below for details",
+      });
+    } else {
+      toast.success("Lab results within normal ranges", {
+        description: "No abnormalities detected",
+      });
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto py-8">
       <motion.div
@@ -143,7 +179,7 @@ const PatientForm = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="border-border/50 shadow-sm">
+        <Card className="border-border/50 shadow-sm card-gradient">
           <CardHeader>
             <CardTitle className="text-2xl">Patient Assessment Form</CardTitle>
             <CardDescription>
@@ -165,7 +201,6 @@ const PatientForm = () => {
                     <TabsTrigger value="labResults">Lab Results</TabsTrigger>
                   </TabsList>
                   
-                  {/* Personal Information Tab */}
                   <TabsContent value="personalInfo" className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
@@ -245,7 +280,6 @@ const PatientForm = () => {
                     </div>
                   </TabsContent>
                   
-                  {/* Medical History Tab */}
                   <TabsContent value="medicalHistory" className="space-y-6">
                     <FormField
                       control={form.control}
@@ -367,7 +401,6 @@ const PatientForm = () => {
                     />
                   </TabsContent>
                   
-                  {/* Symptoms Tab */}
                   <TabsContent value="symptoms" className="space-y-6">
                     <FormField
                       control={form.control}
@@ -525,11 +558,43 @@ const PatientForm = () => {
                     />
                   </TabsContent>
                   
-                  {/* Lab Results Tab */}
                   <TabsContent value="labResults" className="space-y-6">
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Enter any available lab results. These are optional but can help improve prediction accuracy.
-                    </p>
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm text-muted-foreground">
+                        Enter any available lab results. These are optional but can help improve prediction accuracy.
+                      </p>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={analyzeLabResults}
+                        size="sm"
+                      >
+                        Analyze Lab Values
+                      </Button>
+                    </div>
+                    
+                    {labAnalysis && labAnalysis.abnormal && (
+                      <Alert variant="destructive" className="bg-destructive/10 border-destructive/20">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Abnormal lab results detected</AlertTitle>
+                        <AlertDescription>
+                          <ul className="list-disc pl-5 mt-2 space-y-1">
+                            {labAnalysis.details.map((detail, index) => (
+                              <li key={index} className="text-sm">{detail}</li>
+                            ))}
+                          </ul>
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    
+                    {labAnalysis && !labAnalysis.abnormal && (
+                      <Alert className="bg-primary/10 border-primary/20">
+                        <AlertTitle>Lab results within normal ranges</AlertTitle>
+                        <AlertDescription>
+                          All lab values are within their reference ranges.
+                        </AlertDescription>
+                      </Alert>
+                    )}
                     
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
@@ -637,7 +702,7 @@ const PatientForm = () => {
                       Next <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   ) : (
-                    <Button type="submit">
+                    <Button type="submit" className="bg-thyroid-600 hover:bg-thyroid-700">
                       <Save className="mr-2 h-4 w-4" /> Submit for Analysis
                     </Button>
                   )}

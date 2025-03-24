@@ -23,7 +23,7 @@ const Layout = () => {
           <Outlet />
         </PageTransition>
       </main>
-      <footer className="py-6 border-t border-border">
+      <footer className="py-6 border-t border-border bg-thyroid-50 dark:bg-thyroid-900">
         <div className="container mx-auto text-center text-sm text-muted-foreground">
           <p>© {new Date().getFullYear()} Thyroid Guardian. All rights reserved.</p>
         </div>
