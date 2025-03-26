@@ -2,7 +2,7 @@
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/015d8ffa-cb0f-4c1e-bd3e-37c6a138f238
+**URL**: https://thyroid-guardians.lovable.app/
 
 ## How can I edit this code?
 
