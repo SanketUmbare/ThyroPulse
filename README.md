@@ -1,69 +1,68 @@
-# Welcome to your Lovable project
 
-## Project info
+# ThyroPulse
 
-**URL**: https://thyroid-guardians.lovable.app/
+ThyroPulse is a thyroid disease prediction web application that leverages machine learning to provide early risk assessments based on user-inputted health data. The app offers an intuitive interface and real-time predictions to assist users in monitoring their thyroid health.
 
-## How can I edit this code?
+## 🔍 Features
 
-There are several ways of editing your application.
+- 🧠 **Machine Learning Model** – Trained on real thyroid disease datasets using Scikit-learn.
+- 🖥️ **Streamlit Interface** – User-friendly, interactive UI for seamless data input and predictions.
+- 📊 **Data Preprocessing** – Efficient handling of missing values, encoding, and scaling.
+- 📈 **Prediction Output** – Displays whether the input indicates thyroid disease or not.
 
-**Use Lovable**
+## 🛠️ Tech Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/015d8ffa-cb0f-4c1e-bd3e-37c6a138f238) and start prompting.
+- Python
+- Scikit-learn
+- Pandas, NumPy
+- Streamlit
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🚀 Getting Started
 
-**Use your preferred IDE**
+### Prerequisites
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Ensure Python 3.7+ is installed. Install the required packages:
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```bash
+pip install -r requirements.txt
 ```
 
-**Edit a file directly in GitHub**
+### Running the App
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+streamlit run app.py
+```
 
-**Use GitHub Codespaces**
+The app will open in your default browser. You can input health metrics and receive a prediction instantly.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 📂 Project Structure
 
-## What technologies are used for this project?
+```
+ThyroPulse/
+│
+├── app.py                 # Main Streamlit app
+├── thyroid_model.pkl      # Pre-trained ML model
+├── model_training.ipynb   # Notebook for model training
+├── data/                  # Dataset used for training
+├── requirements.txt       # Dependencies
+```
 
-This project is built with .
+## 📉 Dataset
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+The dataset used for training was sourced from a publicly available thyroid disease dataset. It includes medical attributes such as TSH, T3, TT4, FTI, and patient demographics.
 
-## How can I deploy this project?
+## 🧪 Model Info
 
-Simply open [Lovable](https://lovable.dev/projects/015d8ffa-cb0f-4c1e-bd3e-37c6a138f238) and click on Share -> Publish.
+- **Model Type:** Logistic Regression (can be extended to other models)
+- **Accuracy:** ~95% (subject to change based on final version and test conditions)
 
-## I want to use a custom domain - is that possible?
+## 📌 Future Improvements
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+- Integration with cloud-based storage for user data.
+- More advanced models (XGBoost, RandomForest, etc.)
+- Improved UI/UX with visual insights.
+- Mobile-responsive version.
+
+## 🤝 Contributions
+
+Contributions, suggestions, and improvements are welcome! Feel free to fork this repository and submit a pull request.
